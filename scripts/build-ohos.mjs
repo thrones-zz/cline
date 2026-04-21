@@ -126,9 +126,14 @@ async function installProtoc() {
         
         // Extract
         console.log('[OHOS Build] Extracting protoc...');
-        const AdmZip = require('adm-zip');
-        const zip = new AdmZip(zipPath);
-        zip.extractAllTo(protocDir, true);
+        const { execSync } = await import('child_process');
+        // Use unzip command instead of adm-zip for ESM compatibility
+        try {
+            execSync(`unzip -o ${zipPath} -d ${protocDir}`, { stdio: 'pipe' });
+        } catch (e) {
+            // Try with busybox unzip
+            execSync(`busybox unzip -o ${zipPath} -d ${protocDir}`, { stdio: 'pipe' });
+        }
         
         // Make executable
         fs.chmodSync(path.join(protocDir, 'bin', 'protoc'), 0o755);
