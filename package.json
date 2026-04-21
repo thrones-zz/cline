@@ -9,8 +9,19 @@
 		"cli"
 	],
 	"engines": {
-		"vscode": "^1.84.0"
+		"vscode": "^1.84.0",
+		"node": ">=20.0.0"
 	},
+	"os": [
+		"darwin",
+		"linux",
+		"win32",
+		"openharmony"
+	],
+	"cpu": [
+		"x64",
+		"arm64"
+	],
 	"author": {
 		"name": "Cline Bot Inc."
 	},

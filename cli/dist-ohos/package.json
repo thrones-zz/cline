@@ -1,0 +1,15 @@
+{
+  "name": "cline",
+  "version": "2.15.0-ohos",
+  "description": "Cline CLI for OpenHarmony - Autonomous coding agent",
+  "type": "module",
+  "main": "cli.mjs",
+  "bin": {
+    "cline": "./cli.mjs"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "os": ["openharmony", "linux", "darwin", "win32"],
+  "cpu": ["x64", "arm64"]
+}

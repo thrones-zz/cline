@@ -16,7 +16,8 @@
 	"os": [
 		"darwin",
 		"linux",
-		"win32"
+		"win32",
+		"openharmony"
 	],
 	"cpu": [
 		"x64",

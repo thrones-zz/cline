@@ -1,0 +1,76 @@
+/**
+ * OpenHarmony Platform Compatibility Patch for Node.js
+ * 
+ * This patch modifies Node.js's platform detection to treat OpenHarmony
+ * as Linux for compatibility with npm packages that don't support it yet.
+ * 
+ * Apply this patch by requiring it before any other module:
+ *   require('./platform-ohos-patch.js')
+ * 
+ * Or via environment variable:
+ *   NODE_OPTIONS="--require /path/to/platform-ohos-patch.js"
+ */
+
+(function() {
+    'use strict';
+    
+    const originalPlatform = Object.getOwnPropertyDescriptor(process, 'platform');
+    const originalRelease = Object.getOwnPropertyDescriptor(process, 'release');
+    
+    // Check if already patched
+    if (originalPlatform && originalPlatform.get) {
+        const currentPlatform = originalPlatform.get.call(process);
+        if (currentPlatform !== 'linux') {
+            console.log('[OpenHarmony Patch] Detected platform:', currentPlatform);
+            console.log('[OpenHarmony Patch] Patching to report as Linux for npm compatibility...');
+            
+            // Patch process.platform
+            Object.defineProperty(process, 'platform', {
+                get: function() {
+                    return 'linux';
+                },
+                configurable: true
+            });
+            
+            // Also patch process.release.name if needed
+            if (originalRelease && originalRelease.get) {
+                const release = originalRelease.get.call(process);
+                if (release.name === 'OpenHarmony' || release.name === 'ohos') {
+                    Object.defineProperty(process, 'release', {
+                        get: function() {
+                            return {
+                                name: 'Node.js',
+                                lts: false,
+                                sourceUrl: release.sourceUrl,
+                                headersUrl: release.headersUrl
+                            };
+                        },
+                        configurable: true
+                    });
+                }
+            }
+            
+            console.log('[OpenHarmony Patch] Platform patched successfully');
+        }
+    }
+    
+    // Patch os.platform() if called directly
+    const os = require('os');
+    const originalOsPlatform = os.platform;
+    if (typeof originalOsPlatform === 'function') {
+        os.platform = function() {
+            return 'linux';
+        };
+    }
+    
+    // Patch constants.os if available
+    try {
+        const constants = require('constants');
+        if (constants && constants.OHOS) {
+            // OHOS is already defined, ensure it's treated as Linux-compatible
+            console.log('[OpenHarmony Patch] constants.OHOS detected');
+        }
+    } catch (e) {
+        // constants module may not have OHOS
+    }
+})();
