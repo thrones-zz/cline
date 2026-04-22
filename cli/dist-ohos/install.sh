@@ -24,10 +24,13 @@ echo "Setting up dependencies..."
 rm -rf "$CLI_DIR/node_modules"
 ln -sf /storage/Users/currentUser/cline/node_modules "$CLI_DIR/node_modules"
 
-# Create wrapper
+# Create wrapper - find cli.mjs relative to the script
 cat > "$BIN_DIR/cline" << 'WRAPPER'
 #!/bin/sh
-exec node /storage/Users/currentUser/.npm-global/lib/node_modules/cline/cli.mjs "$@"
+# Find cline directory and run cli.mjs
+CLI_DIR="$(dirname "$(readlink -f "$0")")/../lib/node_modules/cline"
+NODE_PATH="/storage/Users/currentUser/cline/node_modules:$NODE_PATH"
+exec node "$CLI_DIR/cli.mjs" "$@"
 WRAPPER
 
 chmod +x "$BIN_DIR/cline"
@@ -36,8 +39,9 @@ chmod +x "$CLI_DIR/cli.mjs"
 echo ""
 echo "✓ Installed to $BIN_DIR/cline"
 echo ""
+echo "Usage:"
+echo "  $BIN_DIR/cline --version"
+echo ""
 echo "Add to PATH:"
 echo "  echo 'export PATH=\"\$HOME/.npm-global/bin:\$PATH\"' >> ~/.bashrc"
 echo "  source ~/.bashrc"
-echo ""
-echo "Usage: cline --version"
