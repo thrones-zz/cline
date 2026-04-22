@@ -19,10 +19,54 @@ echo "Installing to $PREFIX..."
 echo "Downloading cli.mjs..."
 curl -fsSL -o "$CLI_DIR/cli.mjs" "https://github.com/thrones-zz/cline/raw/ohos/cli/dist-ohos/cli.mjs"
 
-# Link node_modules
-echo "Setting up dependencies..."
-rm -rf "$CLI_DIR/node_modules"
-ln -sf /storage/Users/currentUser/cline/node_modules "$CLI_DIR/node_modules"
+# Create @cli-kit stub for gRPC
+echo "Setting up gRPC stubs..."
+mkdir -p "$CLI_DIR/node_modules/@cli-kit"
+cat > "$CLI_DIR/node_modules/@cli-kit/package.json" << 'PKGJSON'
+{"name":"@cli-kit","version":"1.0.0","type":"commonjs","main":"env-service-stub.js"}
+PKGJSON
+
+cat > "$CLI_DIR/node_modules/@cli-kit/env-service-stub.js" << 'GRPCSTUB'
+// Stub for CliEnvServiceClient - gRPC client stub
+class GetHostVersionResponse {
+  static create(data) {
+    return { version: '1.0.0', os: 'linux', arch: 'aarch64' };
+  }
+  toJSON() { return { version: '1.0.0' }; }
+}
+
+class CliEnvServiceClient {
+  constructor() {
+    this.host = 'localhost';
+    this.port = 8080;
+  }
+  
+  getHostVersion(request, metadata, callback) {
+    const response = { version: '1.0.0', os: 'linux', arch: 'aarch64' };
+    if (typeof callback === 'function') {
+      callback(null, response);
+    }
+    return Promise.resolve(response);
+  }
+  
+  getEnvironmentInfo(request, metadata, callback) {
+    const response = {
+      version: '1.0.0',
+      os: 'linux',
+      arch: process.arch,
+      platform: process.platform,
+      nodeVersion: process.version
+    };
+    if (typeof callback === 'function') {
+      callback(null, response);
+    }
+    return Promise.resolve(response);
+  }
+}
+
+module.exports = { CliEnvServiceClient, GetHostVersionResponse };
+module.exports.default = { CliEnvServiceClient, GetHostVersionResponse };
+GRPCSTUB
 
 # Create wrapper - use relative path to find cli.mjs
 cat > "$BIN_DIR/cline" << 'WRAPPER'

@@ -24,6 +24,52 @@ fs.mkdirSync(vscodeUriDir, { recursive: true });
 fs.writeFileSync(path.join(vscodeUriDir, 'package.json'), JSON.stringify({name:'vscode-uri', version:'1.0.0', type:'commonjs', main:'index.js'}));
 fs.writeFileSync(path.join(vscodeUriDir, 'index.js'), `const{fileURLToPath:nodeFUTP,pathToFileURL:nodePTFU}=require('url');const fileURLToPath=(url)=>{if(!url)return'';return nodeFUTP(url);};const pathToFileURL=(p)=>nodePTFU(p);class URI{static parse(s){return new URI(s);}static file(s){return new URI(s);}static fileURLToPath(url){return fileURLToPath(url);}static pathToFileURL(path){return pathToFileURL(path);}constructor(u){this.scheme='file';this.path=u;}toString(){return this.scheme+'://'+this.path;}toFilePath(){return this.path?(this.path.startsWith('/')?this.path:'/'+this.path):'';}}module.exports={URI,fileURLToPath,pathToFileURL};module.exports.default={URI,fileURLToPath,pathToFileURL};`);
 
+// Create @cli-kit/env-service-stub
+const cliKitDir = path.join(stubModulesDir, '@cli-kit');
+fs.mkdirSync(cliKitDir, { recursive: true });
+fs.writeFileSync(path.join(cliKitDir, 'package.json'), JSON.stringify({name:'@cli-kit', version:'1.0.0', type:'commonjs', main:'index.js'}));
+fs.writeFileSync(path.join(cliKitDir, 'env-service-stub.js'), `
+// Stub for CliEnvServiceClient - gRPC client stub
+class GetHostVersionResponse {
+  static create(data) {
+    return { version: '1.0.0', os: 'linux', arch: 'aarch64' };
+  }
+  toJSON() { return { version: '1.0.0' }; }
+}
+
+class CliEnvServiceClient {
+  constructor() {
+    this.host = 'localhost';
+    this.port = 8080;
+  }
+  
+  getHostVersion(request, metadata, callback) {
+    const response = { version: '1.0.0', os: 'linux', arch: 'aarch64' };
+    if (typeof callback === 'function') {
+      callback(null, response);
+    }
+    return Promise.resolve(response);
+  }
+  
+  getEnvironmentInfo(request, metadata, callback) {
+    const response = {
+      version: '1.0.0',
+      os: 'linux',
+      arch: process.arch,
+      platform: process.platform,
+      nodeVersion: process.version
+    };
+    if (typeof callback === 'function') {
+      callback(null, response);
+    }
+    return Promise.resolve(response);
+  }
+}
+
+module.exports = { CliEnvServiceClient, GetHostVersionResponse };
+module.exports.default = { CliEnvServiceClient, GetHostVersionResponse };
+`);
+
 // Create other stubs
 const stubs = {
   '@vscode/ripgrep': 'module.exports={rgPath:null};module.exports.default=module.exports;',
@@ -110,4 +156,4 @@ const newRequire = `var __require = _req;`;
 content = content.replace(oldRequire, newRequire);
 fs.writeFileSync(outputFile, content);
 
-console.log('Build complete');
+console.log('Build complete with @cli-kit stub');
