@@ -1,151 +1,182 @@
-<div align="center"><sub>
-English | <a href="https://github.com/cline/cline/blob/main/locales/es/README.md" target="_blank">Español</a> | <a href="https://github.com/cline/cline/blob/main/locales/de/README.md" target="_blank">Deutsch</a> | <a href="https://github.com/cline/cline/blob/main/locales/ja/README.md" target="_blank">日本語</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-cn/README.md" target="_blank">简体中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/zh-tw/README.md" target="_blank">繁體中文</a> | <a href="https://github.com/cline/cline/blob/main/locales/ko/README.md" target="_blank">한국어</a>
-</sub></div>
-
-# Cline
-
-<p align="center">
-  <img src="https://media.githubusercontent.com/media/cline/cline/main/assets/docs/demo.gif" width="100%" />
-</p>
+# Cline CLI for OpenHarmony
 
 <div align="center">
-<table>
-<tbody>
-<td align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev" target="_blank"><strong>Download on VS Marketplace</strong></a>
-</td>
-<td align="center">
-<a href="https://discord.gg/cline" target="_blank"><strong>Discord</strong></a>
-</td>
-<td align="center">
-<a href="https://www.reddit.com/r/cline/" target="_blank"><strong>r/cline</strong></a>
-</td>
-<td align="center">
-<a href="https://github.com/cline/cline/discussions/categories/feature-requests?discussions_q=is%3Aopen+category%3A%22Feature+Requests%22+sort%3Atop" target="_blank"><strong>Feature Requests</strong></a>
-</td>
-<td align="center">
-<a href="https://docs.cline.bot/getting-started/for-new-coders" target="_blank"><strong>Getting Started</strong></a>
-</td>
-</tbody>
-</table>
+
+**OpenHarmony 平台的 Cline CLI 命令行工具**
+
+[![Version](https://img.shields.io/badge/version-2.15.0-blue.svg)](https://github.com/thrones-zz/cline)
+[![Platform](https://img.shields.io/badge/platform-OpenHarmony-green.svg)](https://gitee.com/openharmony)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D%2020.0.0-orange.svg)](https://nodejs.org/)
+
 </div>
-
-Meet Cline, an AI assistant that can use your **CLI** a**N**d **E**ditor.
-
-Thanks to [Claude Sonnet's agentic coding capabilities](https://www.anthropic.com/claude/sonnet), Cline can handle complex software development tasks step-by-step. With tools that let him create & edit files, explore large projects, use the browser, and execute terminal commands (after you grant permission), he can assist you in ways that go beyond code completion or tech support. Cline can even use the Model Context Protocol (MCP) to create new tools and extend his own capabilities. While autonomous AI scripts traditionally run in sandboxed environments, this extension provides a human-in-the-loop GUI to approve every file change and terminal command, providing a safe and accessible way to explore the potential of agentic AI.
-
-1. Enter your task and add images to convert mockups into functional apps or fix bugs with screenshots.
-2. Cline starts by analyzing your file structure & source code ASTs, running regex searches, and reading relevant files to get up to speed in existing projects. By carefully managing what information is added to context, Cline can provide valuable assistance even for large, complex projects without overwhelming the context window.
-3. Once Cline has the information he needs, he can:
-    - Create and edit files + monitor linter/compiler errors along the way, letting him proactively fix issues like missing imports and syntax errors on his own.
-    - Execute commands directly in your terminal and monitor their output as he works, letting him e.g., react to dev server issues after editing a file.
-    - For web development tasks, Cline can launch the site in a headless browser, click, type, scroll, and capture screenshots + console logs, allowing him to fix runtime errors and visual bugs.
-4. When a task is completed, Cline will present the result to you with a terminal command like `open -a "Google Chrome" index.html`, which you run with a click of a button.
-
-> [!TIP]
-> Follow [this guide](https://docs.cline.bot/features/customization/opening-cline-in-sidebar) to open Cline on the right side of your editor. This lets you use Cline side-by-side with your file explorer, and see how he changes your workspace more clearly.
 
 ---
 
-<img align="right" width="340" src="https://github.com/user-attachments/assets/3cf21e04-7ce9-4d22-a7b9-ba2c595e88a4">
+## 🚀 快速安装
 
-### Use any API and Model
+### 方法一: 一键安装 (推荐)
 
-Cline supports API providers like OpenRouter, Anthropic, OpenAI, Google Gemini, AWS Bedrock, Azure, GCP Vertex, Cerebras and Groq. You can also configure any OpenAI compatible API, or use a local model through LM Studio/Ollama. If you're using OpenRouter, the extension fetches their latest model list, allowing you to use the newest models as soon as they're available.
+```bash
+curl -fsSL https://raw.githubusercontent.com/thrones-zz/cline/ohos/cli/dist-ohos/install.sh | sh
+```
 
-The extension also keeps track of total tokens and API usage cost for the entire task loop and individual requests, keeping you informed of spend every step of the way.
+### 方法二: 手动安装
 
-<!-- Transparent pixel to create line break after floating image -->
+```bash
+# 1. 下载编译产物
+curl -L -o cli.mjs https://github.com/thrones-zz/cline/raw/ohos/cli/dist-ohos/cli.mjs
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+# 2. 创建目录并安装
+mkdir -p ~/.npm-global/bin
+mkdir -p ~/.npm-global/lib/node_modules
 
-<img align="left" width="370" src="https://github.com/user-attachments/assets/81be79a8-1fdb-4028-9129-5fe055e01e76">
+# 3. 复制文件
+cp cli.mjs ~/.npm-global/lib/node_modules/cline/cli.mjs
 
-### Run Commands in Terminal
+# 4. 链接 node_modules
+ln -sf /storage/Users/currentUser/cline/node_modules ~/.npm-global/lib/node_modules/cline/node_modules
 
-Thanks to the new [shell integration updates in VSCode v1.93](https://code.visualstudio.com/updates/v1_93#_terminal-shell-integration-api), Cline can execute commands directly in your terminal and receive the output. This allows him to perform a wide range of tasks, from installing packages and running build scripts to deploying applications, managing databases, and executing tests, all while adapting to your dev environment & toolchain to get the job done right.
+# 5. 创建可执行文件
+cat > ~/.npm-global/bin/cline << 'EOF'
+#!/bin/sh
+exec node /storage/Users/currentUser/.npm-global/lib/node_modules/cline/cli.mjs "$@"
+EOF
+chmod +x ~/.npm-global/bin/cline
 
-For long running processes like dev servers, use the "Proceed While Running" button to let Cline continue in the task while the command runs in the background. As Cline works he’ll be notified of any new terminal output along the way, letting him react to issues that may come up, such as compile-time errors when editing files.
+# 6. 添加到 PATH
+echo 'export PATH="$HOME/.npm-global/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
 
-<!-- Transparent pixel to create line break after floating image -->
+## 📦 从源码编译
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+```bash
+# 1. 克隆仓库
+git clone https://github.com/thrones-zz/cline.git
+cd cline
+git checkout ohos
 
-<img align="right" width="400" src="https://github.com/user-attachments/assets/c5977833-d9b8-491e-90f9-05f9cd38c588">
+# 2. 安装依赖
+npm install
+cd cli
+npm install
 
-### Create and Edit Files
+# 3. 编译
+node build-ohos-direct.mjs
 
-Cline can create and edit files directly in your editor, presenting you a diff view of the changes. You can edit or revert Cline's changes directly in the diff view editor, or provide feedback in chat until you're satisfied with the result. Cline also monitors linter/compiler errors (missing imports, syntax errors, etc.) so he can fix issues that come up along the way on his own.
+# 4. 安装
+cd dist-ohos
+./install.sh
+```
 
-All changes made by Cline are recorded in your file's Timeline, providing an easy way to track and revert modifications if needed.
+## ✅ 验证安装
 
-<!-- Transparent pixel to create line break after floating image -->
+```bash
+# 检查版本
+cline --version
+# 输出: 2.15.0
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+# 查看帮助
+cline --help
+```
 
-<img align="left" width="370" src="https://github.com/user-attachments/assets/bc2e85ba-dfeb-4fe6-9942-7cfc4703cbe5">
+## 🔧 使用方法
 
-### Use the Browser
+### 基本使用
 
-With Claude Sonnet's new [Computer Use](https://www.anthropic.com/news/3-5-models-and-computer-use) capability, Cline can launch a browser, click elements, type text, and scroll, capturing screenshots and console logs at each step. This allows for interactive debugging, end-to-end testing, and even general web use! This gives him autonomy to fixing visual bugs and runtime issues without you needing to handhold and copy-pasting error logs yourself.
+```bash
+# 设置 API Key
+export ANTHROPIC_API_KEY="sk-ant-..."
 
-Try asking Cline to "test the app", and watch as he runs a command like `npm run dev`, launches your locally running dev server in a browser, and performs a series of tests to confirm that everything works. [See a demo here.](https://x.com/sdrzn/status/1850880547825823989)
+# 运行任务
+cline "帮我写一个 Hello World 程序"
 
-<!-- Transparent pixel to create line break after floating image -->
+# 使用 act 模式
+cline --act "重构 src/utils 文件夹"
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+# 使用 plan 模式 (预览)
+cline --plan "添加新功能"
 
-<img align="right" width="350" src="https://github.com/user-attachments/assets/ac0efa14-5c1f-4c26-a42d-9d7c56f5fadd">
+# Yolo 模式 (自动批准)
+cline --yolo "批量修改文件"
 
-### "add a tool that..."
+# 指定模型
+cline --model claude-sonnet "任务描述"
 
-Thanks to the [Model Context Protocol](https://github.com/modelcontextprotocol), Cline can extend his capabilities through custom tools. While you can use [community-made servers](https://github.com/modelcontextprotocol/servers), Cline can instead create and install tools tailored to your specific workflow. Just ask Cline to "add a tool" and he will handle everything, from creating a new MCP server to installing it into the extension. These custom tools then become part of Cline's toolkit, ready to use in future tasks.
+# 指定工作目录
+cline --cwd /path/to/project "任务"
+```
 
--   "add a tool that fetches Jira tickets": Retrieve ticket ACs and put Cline to work
--   "add a tool that manages AWS EC2s": Check server metrics and scale instances up or down
--   "add a tool that pulls the latest PagerDuty incidents": Fetch details and ask Cline to fix bugs
+### 常用命令
 
-<!-- Transparent pixel to create line break after floating image -->
+```bash
+# 查看帮助
+cline --help
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+# 检查版本
+cline --version
 
-<img align="left" width="360" src="https://github.com/user-attachments/assets/7fdf41e6-281a-4b4b-ac19-020b838b6970">
+# 交互模式
+cline --interactive
 
-### Add Context
+# 禁用安全确认
+cline --yes "自动化任务"
+```
 
-**`@url`:** Paste in a URL for the extension to fetch and convert to markdown, useful when you want to give Cline the latest docs
+## 📁 文件结构
 
-**`@problems`:** Add workspace errors and warnings ('Problems' panel) for Cline to fix
+```
+dist-ohos/
+├── cli.mjs              # 主程序
+├── install.sh           # 安装脚本
+├── README.md            # 本文档
+└── node_modules/        # 依赖模块
+    ├── chalk/
+    ├── events/
+    ├── vscode-uri/
+    └── ...
+```
 
-**`@file`:** Adds a file's contents so you don't have to waste API requests approving read file (+ type to search files)
+## 🔍 故障排除
 
-**`@folder`:** Adds folder's files all at once to speed up your workflow even more
+### 提示 "command not found"
 
-<!-- Transparent pixel to create line break after floating image -->
+```bash
+# 检查 PATH
+echo $PATH
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+# 确认安装
+ls -la ~/.npm-global/bin/cline
+```
 
-<img align="right" width="350" src="https://github.com/user-attachments/assets/140c8606-d3bf-41b9-9a1f-4dbf0d4c90cb">
+### 提示权限错误
 
-### Checkpoints: Compare and Restore
+```bash
+# 使用 chmod 修改权限
+chmod +x ~/.npm-global/bin/cline
+chmod +x ~/.npm-global/lib/node_modules/cline/cli.mjs
+```
 
-As Cline works through a task, the extension takes a snapshot of your workspace at each step. You can use the 'Compare' button to see a diff between the snapshot and your current workspace, and the 'Restore' button to roll back to that point.
+### Node.js 版本问题
 
-For example, when working with a local web server, you can use 'Restore Workspace Only' to quickly test different versions of your app, then use 'Restore Task and Workspace' when you find the version you want to continue building from. This lets you safely explore different approaches without losing progress.
+```bash
+# 检查版本
+node --version
 
-<!-- Transparent pixel to create line break after floating image -->
+# 需要 Node.js 20+
+```
 
-<img width="2000" height="0" src="https://github.com/user-attachments/assets/ee14e6f7-20b8-4391-9091-8e8e25561929"><br>
+## 📚 相关资源
 
-## Contributing
+- [GitHub 仓库](https://github.com/thrones-zz/cline)
+- [OpenHarmony 分支](https://github.com/thrones-zz/cline/tree/ohos)
+- [官方文档](https://docs.cline.bot)
+- [Cline Discord](https://discord.gg/cline)
 
-To contribute to the project, start with our [Contributing Guide](CONTRIBUTING.md) to learn the basics. You can also join our [Discord](https://discord.gg/cline) to chat with other contributors in the `#contributors` channel. If you're looking for full-time work, check out our open positions on our [careers page](https://cline.bot/join-us)!
+## 📄 许可证
 
-## Enterprise
+[Apache 2.0](./LICENSE)
 
-Get the same Cline experience with enterprise-grade controls: SSO (SAML/OIDC), global policies and configuration, observability with audit trails, private networking (VPC/private link), and self-hosted or on-prem deployments, and enterprise support. Learn more at our [enterprise page](https://cline.bot/enterprise) or [talk to us](https://cline.bot/contact-sales).
+---
 
-
-## License
-
-[Apache 2.0 © 2026 Cline Bot Inc.](./LICENSE)
+**版本**: 2.15.0 | **平台**: OpenHarmony (Linux aarch64) | **Node.js**: >= 20.0.0
