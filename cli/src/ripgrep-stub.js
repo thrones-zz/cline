@@ -1,0 +1,4 @@
+
+// @vscode/ripgrep stub for OpenHarmony
+export const rgPath = null;
+export default { rgPath };
