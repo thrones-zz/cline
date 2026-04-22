@@ -34,25 +34,19 @@ WRAPPER
 chmod +x "$BIN_DIR/cline"
 chmod +x "$CLI_DIR/cli.mjs"
 
-# Auto-configure PATH if not already set
-PROFILE_FILE=""
-if [ -f "$HOME/.bashrc" ]; then
-    PROFILE_FILE="$HOME/.bashrc"
-elif [ -f "$HOME/.profile" ]; then
-    PROFILE_FILE="$HOME/.profile"
-elif [ -f "$HOME/.zshrc" ]; then
-    PROFILE_FILE="$HOME/.zshrc"
-fi
-
-if [ -n "$PROFILE_FILE" ]; then
-    if ! grep -q "$BIN_DIR" "$PROFILE_FILE" 2>/dev/null; then
-        echo "" >> "$PROFILE_FILE"
-        echo "# Cline CLI for OpenHarmony" >> "$PROFILE_FILE"
-        echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$PROFILE_FILE"
-        echo "✓ Added PATH to $PROFILE_FILE"
-        echo "  Please run: source $PROFILE_FILE"
+# Auto-configure PATH in .bashrc
+echo ""
+echo "Configuring PATH..."
+for rc in "$HOME/.bashrc" "$HOME/.profile" "$HOME/.zshrc"; do
+    if [ -f "$rc" ]; then
+        if ! grep -q "$BIN_DIR" "$rc" 2>/dev/null; then
+            echo "" >> "$rc"
+            echo "# Cline CLI for OpenHarmony" >> "$rc"
+            echo "export PATH=\"$BIN_DIR:\$PATH\"" >> "$rc"
+            echo "✓ Updated $rc"
+        fi
     fi
-fi
+done
 
 echo ""
 echo "✓ Installed to $BIN_DIR/cline"
@@ -60,3 +54,6 @@ echo ""
 echo "Usage:"
 echo "  cline --version"
 echo "  cline --help"
+echo ""
+echo "If 'cline' not found in new terminal, run:"
+echo "  source ~/.bashrc"
