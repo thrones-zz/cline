@@ -1,86 +1,81 @@
 import * as esbuild from 'esbuild';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
-const distDir = path.join(process.cwd(), 'dist-ohos');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const distDir = path.join(__dirname, 'dist-ohos');
 const stubModulesDir = path.join(distDir, 'node_modules');
-
-// Create stub modules directory
 if (!fs.existsSync(stubModulesDir)) {
   fs.mkdirSync(stubModulesDir, { recursive: true });
 }
 
-// Create @vscode/ripgrep stub
-const ripgrepDir = path.join(stubModulesDir, '@vscode', 'ripgrep');
-if (!fs.existsSync(ripgrepDir)) {
-  fs.mkdirSync(ripgrepDir, { recursive: true });
-  fs.writeFileSync(path.join(ripgrepDir, 'package.json'), JSON.stringify({
-    name: '@vscode/ripgrep',
-    version: '1.0.0',
-    main: 'stub.js'
-  }));
-  fs.writeFileSync(path.join(ripgrepDir, 'stub.js'), `
-// @vscode/ripgrep stub for OpenHarmony
-module.exports = {
-  rgpath: null,
+// Create chalk stub
+const chalkDir = path.join(stubModulesDir, 'chalk');
+fs.mkdirSync(chalkDir, { recursive: true });
+fs.writeFileSync(path.join(chalkDir, 'package.json'), JSON.stringify({name:'chalk', version:'1.0.0', type:'commonjs', main:'index.js'}));
+fs.writeFileSync(path.join(chalkDir, 'index.js'), `const c=(s)=>s;const fn=(s)=>s!=null?c(s):'';fn.red=fn;fn.green=fn;fn.yellow=fn;fn.blue=fn;fn.cyan=fn;fn.magenta=fn;fn.bold=fn;fn.dim=fn;fn.inverse=fn;fn.gray=fn;fn.grey=fn;fn.bgRed=fn;fn.bgGreen=fn;fn.bgYellow=fn;fn.bgBlue=fn;fn.default=fn;module.exports=fn;`);
+
+// Create vscode-uri stub
+const vscodeUriDir = path.join(stubModulesDir, 'vscode-uri');
+fs.mkdirSync(vscodeUriDir, { recursive: true });
+fs.writeFileSync(path.join(vscodeUriDir, 'package.json'), JSON.stringify({name:'vscode-uri', version:'1.0.0', type:'commonjs', main:'index.js'}));
+fs.writeFileSync(path.join(vscodeUriDir, 'index.js'), `const{fileURLToPath:nodeFUTP,pathToFileURL:nodePTFU}=require('url');const fileURLToPath=(url)=>{if(!url)return'';return nodeFUTP(url);};const pathToFileURL=(p)=>nodePTFU(p);class URI{static parse(s){return new URI(s);}static file(s){return new URI(s);}static fileURLToPath(url){return fileURLToPath(url);}static pathToFileURL(path){return pathToFileURL(path);}constructor(u){this.scheme='file';this.path=u;}toString(){return this.scheme+'://'+this.path;}toFilePath(){return this.path?(this.path.startsWith('/')?this.path:'/'+this.path):'';}}module.exports={URI,fileURLToPath,pathToFileURL};module.exports.default={URI,fileURLToPath,pathToFileURL};`);
+
+// Create other stubs
+const stubs = {
+  '@vscode/ripgrep': 'module.exports={rgPath:null};module.exports.default=module.exports;',
+  'ink': 'module.exports=({children})=>null;module.exports.default=module.exports;',
+  'ink-spinner': 'module.exports=()=>null;module.exports.default=module.exports;',
+  'ink-picture': 'module.exports=()=>null;module.exports.default=module.exports;',
+  'ora': 'module.exports=()=>({start:()=>{},succeed:()=>{},fail:()=>{},stop:()=>{}});module.exports.default=module.exports;',
+  'cli-highlight': 'module.exports={default:{highlight:(s)=>s}};module.exports.default=module.exports;',
+  'marked': 'module.exports={default:{parse:(s)=>s}};module.exports.default=module.exports;',
+  'open': 'module.exports=async(url)=>{};module.exports.default=module.exports;',
+  'pino': 'module.exports=()=>({info:()=>{},warn:()=>{},error:()=>{},debug:()=>{}});module.exports.default=module.exports;',
+  'pino-roll': 'module.exports=()=>({info:()=>{},warn:()=>{},error:()=>{},debug:()=>{}});module.exports.default=module.exports;',
+  'events': 'module.exports=require("events");module.exports.default=module.exports;',
 };
-`);
+
+for (const [name, code] of Object.entries(stubs)) {
+  const dir = path.join(stubModulesDir, name);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({name, version:'1.0.0', type:'commonjs', main:'index.js'}));
+  fs.writeFileSync(path.join(dir, 'index.js'), code);
 }
 
-// Create vscode stub
-const vscodeDir = stubModulesDir;
-if (!fs.existsSync(vscodeDir)) {
-  fs.mkdirSync(vscodeDir, { recursive: true });
-}
-fs.writeFileSync(path.join(vscodeDir, 'package.json'), JSON.stringify({
-  name: 'vscode',
-  version: '1.0.0',
-  main: 'index.js'
-}));
-fs.writeFileSync(path.join(vscodeDir, 'index.js'), `
-// VSCode stub for OpenHarmony CLI
-module.exports = {
-  commands: {
-    registerCommand: () => ({ dispose: () => {} }),
-    executeCommand: () => Promise.resolve(),
-  },
-  window: {
-    showInformationMessage: () => {},
-    showWarningMessage: () => {},
-    showErrorMessage: () => {},
-    createOutputChannel: () => ({
-      appendLine: () => {},
-      show: () => {},
-      dispose: () => {},
-    }),
-  },
-  workspace: {
-    workspaceFolders: [],
-    getConfiguration: () => ({
-      get: () => undefined,
-      update: () => Promise.resolve(),
-    }),
-    createFileSystemWatcher: () => ({ dispose: () => {} }),
-  },
-  env: {
-    openExternal: () => Promise.resolve(),
-  },
-  TreeItem: class {},
-  TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
-};
-`);
-
-// VSCode stub plugin for bundling
+// VSCode stub plugin
 const vscodeStubPlugin = {
   name: 'vscode-stub',
   setup(build) {
-    build.onResolve({ filter: /^vscode$/ }, () => {
-      return { path: path.join(process.cwd(), 'src/vscode-shim.ts') };
-    });
+    build.onResolve({ filter: /^vscode$/ }, () => ({
+      path: path.join(__dirname, 'src/vscode-shim.ts')
+    }));
   },
 };
 
-const __dirname = process.cwd();
+// Banner with polyfill - define __dirname and __filename BEFORE the bundle runs
+const banner = `import { createRequire } from 'module';
+import { fileURLToPath as _futp } from 'url';
+import { dirname } from 'path';
+const _u = import.meta.url;
+const _fname = _futp(_u);
+const _dname = dirname(_fname);
+const _require = createRequire(_u);
+const _req = (id) => {
+  if (typeof id === 'string' && id.startsWith('node:')) {
+    return _require(id.slice(5));
+  }
+  return _require(id);
+};
+// Set up global __dirname and __filename before any code runs
+globalThis.__filename = _fname;
+globalThis.__dirname = _dname;
+var __dirname = _dname;
+var __filename = _fname;
+`;
 
 await esbuild.build({
   bundle: true,
@@ -90,37 +85,29 @@ await esbuild.build({
   target: 'node20',
   format: 'esm',
   plugins: [vscodeStubPlugin],
-  external: [
-    '@vscode/ripgrep',
-    '@grpc/reflection',
-    'grpc-health-check',
-    'better-sqlite3',
-    'ink',
-    'ink-spinner',
-    'ink-picture',
-    'react',
-    'aws4fetch',
-    'pino',
-    'pino-roll'
-  ],
+  external: ['@grpc/reflection', 'grpc-health-check', 'better-sqlite3', '@vscode/ripgrep', 'ink', 'ink-spinner', 'ink-picture', 'react', 'react-dom', 'aws4fetch', 'pino', 'pino-roll', 'chalk', 'ora', 'cli-highlight', 'marked', 'open', 'vscode-uri', 'events'],
   sourcemap: false,
   minify: false,
   logLevel: 'silent',
   tsconfig: path.join(__dirname, 'tsconfig.json'),
-  define: {
-    'process.env.IS_STANDALONE': '"true"',
-    'process.env.IS_CLI': '"true"'
-  },
-  banner: {
-    js: `#!/usr/bin/env node
-process.emitWarning = () => {};
-import{createRequire as _createRequire}from"module";
-import{fileURLToPath as _fileURLToPath}from"url";
-import{dirname as _dirname}from"path";
-const require=_createRequire(import.meta.url);
-const __filename=_fileURLToPath(import.meta.url);
-const __dirname=_dirname(__filename);`
-  }
+  define: { 'process.env.IS_STANDALONE': '"true"', 'process.env.IS_CLI': '"true"' },
+  banner: { js: banner }
 });
+
+// Fix __require definition
+const outputFile = path.join(__dirname, 'dist-ohos/cli.mjs');
+let content = fs.readFileSync(outputFile, 'utf8');
+
+const oldRequire = `var __require = /* @__PURE__ */ ((x8) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x8, {
+  get: (a8, b7) => (typeof require !== "undefined" ? require : a8)[b7]
+}) : x8)(function(x8) {
+  if (typeof require !== "undefined") return require.apply(this, arguments);
+  throw Error('Dynamic require of "' + x8 + '" is not supported');
+});`;
+
+const newRequire = `var __require = _req;`;
+
+content = content.replace(oldRequire, newRequire);
+fs.writeFileSync(outputFile, content);
 
 console.log('Build complete');

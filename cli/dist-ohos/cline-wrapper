@@ -1,0 +1,6 @@
+#!/bin/sh
+# Wrapper to run cline CLI
+# Get the real path of this script
+SCRIPT_PATH="$(realpath "$0")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+exec node "$SCRIPT_DIR/cli.mjs" "$@"
