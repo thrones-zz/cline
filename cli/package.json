@@ -5,7 +5,7 @@
 	"main": "dist/lib.mjs",
 	"types": "dist/lib.d.ts",
 	"bin": {
-		"cline": "./dist/cli.mjs"
+		"cline": "./dist-ohos/cli.mjs"
 	},
 	"exports": {
 		".": {

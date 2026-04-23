@@ -70,25 +70,27 @@ module.exports = { CliEnvServiceClient, GetHostVersionResponse };
 module.exports.default = { CliEnvServiceClient, GetHostVersionResponse };
 `);
 
-// Create other stubs
+// Create other stubs - ESM format
 const stubs = {
-  '@vscode/ripgrep': 'module.exports={rgPath:null};module.exports.default=module.exports;',
-  'ink': 'module.exports=({children})=>null;module.exports.default=module.exports;',
-  'ink-spinner': 'module.exports=()=>null;module.exports.default=module.exports;',
-  'ink-picture': 'module.exports=()=>null;module.exports.default=module.exports;',
-  'ora': 'module.exports=()=>({start:()=>{},succeed:()=>{},fail:()=>{},stop:()=>{}});module.exports.default=module.exports;',
-  'cli-highlight': 'module.exports={default:{highlight:(s)=>s}};module.exports.default=module.exports;',
-  'marked': 'module.exports={default:{parse:(s)=>s}};module.exports.default=module.exports;',
-  'open': 'module.exports=async(url)=>{};module.exports.default=module.exports;',
-  'pino': 'module.exports=()=>({info:()=>{},warn:()=>{},error:()=>{},debug:()=>{}});module.exports.default=module.exports;',
-  'pino-roll': 'module.exports=()=>({info:()=>{},warn:()=>{},error:()=>{},debug:()=>{}});module.exports.default=module.exports;',
-  'events': 'module.exports=require("events");module.exports.default=module.exports;',
+  '@vscode/ripgrep': 'export default {rgPath:null};',
+  'ink': `import React from 'react'; export default function InkMock({children}) { return null; }; export const render = (c) => ({unmount:()=>{}}); export const Box = () => null; export const Text = () => null; export const Static = () => null; export const useInput = () => {}; export const useApp = () => ({});`,
+  'ink-spinner': 'export default function Spinner() { return null; };',
+  'ink-picture': 'export default function Picture() { return null; };',
+  'ink-text-input': 'import React from "react"; export default function TextInput() { return null; }; export const Input = () => null;',
+  'ink-select-input': 'import React from "react"; export default function SelectInput() { return null; };',
+  'ora': 'export default function Ora() { return {start:()=>{},succeed:()=>{},fail:()=>{},stop:()=>{}}; };',
+  'cli-highlight': 'export default { highlight: (s) => s };',
+  'marked': 'export function lexer(s) { return [{type:"text",raw:s,text:s,tokens:[]}] }; export function parse(s) { return s; }; export function parseInline(s) { return s; }; export default { lexer, parse, parseInline };',
+  'open': 'export default async (url) => {};',
+  'pino': 'export default function Pino() { const p = { info(){}, warn(){}, error(){}, debug(){} }; p.transport = () => p; return p; };',
+  'pino-roll': 'export default function PinoRoll() { const p = { info(){}, warn(){}, error(){}, debug(){} }; p.transport = () => p; return p; };',
+  'events': 'export { EventEmitter } from "events"; export default { EventEmitter };',
 };
 
 for (const [name, code] of Object.entries(stubs)) {
   const dir = path.join(stubModulesDir, name);
   fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({name, version:'1.0.0', type:'commonjs', main:'index.js'}));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({name, version:'1.0.0', type:'module', main:'index.js'}));
   fs.writeFileSync(path.join(dir, 'index.js'), code);
 }
 
@@ -98,6 +100,28 @@ const vscodeStubPlugin = {
   setup(build) {
     build.onResolve({ filter: /^vscode$/ }, () => ({
       path: path.join(__dirname, 'src/vscode-shim.ts')
+    }));
+  },
+};
+
+// Proto stub plugin - redirect @shared/proto and @generated imports to stub
+const protoStubPlugin = {
+  name: 'proto-stub',
+  setup(build) {
+    // Redirect @shared/proto to stub module
+    build.onResolve({ filter: /^@shared\/proto/ }, (args) => ({
+      path: path.join(__dirname, 'src/proto-stub.ts')
+    }));
+    build.onResolve({ filter: /^@\/shared\/proto/ }, (args) => ({
+      path: path.join(__dirname, 'src/proto-stub.ts')
+    }));
+    // Redirect @generated imports to stub module
+    build.onResolve({ filter: /^@generated/ }, (args) => ({
+      path: path.join(__dirname, 'src/proto-stub.ts')
+    }));
+    // Redirect @/ path alias to stub module  
+    build.onResolve({ filter: /^@\// }, (args) => ({
+      path: path.join(__dirname, 'src/proto-stub.ts')
     }));
   },
 };
@@ -130,7 +154,7 @@ await esbuild.build({
   platform: 'node',
   target: 'node20',
   format: 'esm',
-  plugins: [vscodeStubPlugin],
+  plugins: [vscodeStubPlugin, protoStubPlugin],
   external: ['@grpc/reflection', 'grpc-health-check', 'better-sqlite3', '@vscode/ripgrep', 'ink', 'ink-spinner', 'ink-picture', 'react', 'react-dom', 'aws4fetch', 'pino', 'pino-roll', 'chalk', 'ora', 'cli-highlight', 'marked', 'open', 'vscode-uri', 'events'],
   sourcemap: false,
   minify: false,
